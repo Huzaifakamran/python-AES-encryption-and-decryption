@@ -17,13 +17,14 @@ Follow these steps to set up and run the project:
    cd encrypted-communication-system
 
 2. **Install the required packages**:
-
-pip install -r requirements.txt
+```bash
+   pip install -r requirements.txt
 
 3. **Generate encryption keys**:
 
+```bash
 python generateKeys.py
 
 4. **Run the application**:
-
+```bash
 python app.py
