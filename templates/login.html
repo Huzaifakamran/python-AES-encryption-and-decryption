@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"
+            integrity="sha512-95iy0RZIbw3H/FgfAj2wnCQJlzFQ+eaSfUeV/l8WVyGHKSRMzm3M/O+85j9ba/HFphkijrCTDjcuDX0BL2lthA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer">
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <form method="post" action="/login" id="login-form">
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </form>
+    <script>
+        $(document).ready(function() {
+            $("#login-form").submit(function (e) {
+                e.preventDefault();
+
+                // In Key I have received the key sent from backend
+                const key = "{{ key|safe }}";
+                // Beginning of encryption using Forge package
+                var publicKey = forge.pki.publicKeyFromPem(key);
+                var encrypted = publicKey.encrypt($("#password").val(), "RSA-OAEP", {
+                  md: forge.md.sha256.create(),
+                  mgf1: forge.mgf1.create(),
+                });
+                const encryptedPassword = forge.util.encode64(encrypted);
+                // ending of encryption using Forge package.
+                
+                // sending the encrypted password to backend.
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    data: {
+                        password: encryptedPassword,
+                    },
+                    success: function (response) {
+                        location.reload(true);
+                    },
+                    error: function (response) {
+                        location.reload(false);
+                    },
+                });
+            });
+        });
+    </script>
+</body>
+</html>
