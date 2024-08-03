@@ -11,28 +11,32 @@
 <body>
     <form method="post" action="/login" id="login-form">
         <div class="form-group">
-            <label for="password">Password:</label>
+            <label for="password">Text:</label>
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Login</button>
+        <button type="submit" class="btn btn-primary btn-block">Encrypt</button>
     </form>
+
+    <div id="encrypted-message" style="display:none;">
+        <!-- This is where the encrypted message will be displayed -->
+    </div>
+
     <script>
         $(document).ready(function() {
             $("#login-form").submit(function (e) {
                 e.preventDefault();
 
-                // In Key I have received the key sent from backend
+                // Get the public key sent from the backend
                 const key = "{{ key|safe }}";
-                // Beginning of encryption using Forge package
+                // Encrypt the password using the Forge package
                 var publicKey = forge.pki.publicKeyFromPem(key);
                 var encrypted = publicKey.encrypt($("#password").val(), "RSA-OAEP", {
-                  md: forge.md.sha256.create(),
-                  mgf1: forge.mgf1.create(),
+                    md: forge.md.sha256.create(),
+                    mgf1: forge.mgf1.create(),
                 });
                 const encryptedPassword = forge.util.encode64(encrypted);
-                // ending of encryption using Forge package.
                 
-                // sending the encrypted password to backend.
+                // Send the encrypted password to the backend
                 $.ajax({
                     type: "POST",
                     url: "/login",
@@ -40,13 +44,51 @@
                         password: encryptedPassword,
                     },
                     success: function (response) {
-                        location.reload(true);
+                        const privateKeyPem = `-----BEGIN RSA PRIVATE KEY-----
+                        MIIEpAIBAAKCAQEAqmM9OvoUcz94QPbHGeuTnBcQbYYe2cmWOr5Aeyppz9i/Bl1W
+                        bxF/w6ix5T6JjxK+VsIhPf3xqVK97CLOX8YlTTLDZ0iZ5TUR54BN9zNCfSBRIjpQ
+                        AJzQdlZMevmpbE7bsZzdgHn+bpYBP6Pom3i0/q354IqWh2dCHVozHTCrHKidytGz
+                        2Rq8vWQFym7njVd9t8dCr3q0nGVjHoEvWkVlZSXmFAVFqMOeIKrCGMQI85tpBcgJ
+                        wtznY6el+BBqMNufy14xvTjbjqu44Ad7sAVRp9hSrwfqf2LbF4nsGsgc3hxUQkS/
+                        wJ0AYJGRQMv+ibXCAJKBfkG8rSy3IJj+ROHNkQIDAQABAoIBABqOGO7mJuXHUJCf
+                        ZWxuwLSlC5RmQMyklFtXZ2lKtO8F0s/FIEFzMrxlwEQAOSQpQaz32IJ234EKOjth
+                        OVTH5uxfKwEf2YxVdxLjdkM+o/AoZzy0Zd+SkRLAZG8OFg+hQrAtyH/Lg5Hsowku
+                        HISOjXbb2oPaVZeIyk8Uzb6Q5Toz85OaQVRmKgO1/O1aHVm/EASHqTA1qEwFnTDm
+                        uOiKlpdfP7sDG420l9RTNY9ooMosKQya3hHk4r35firIhMboI4cogRPOhVO1iu7m
+                        sAY3lgYEVIcfWkFtxrHc1ylBSpTtVfHgFoCGf+pTvSS8/wgQfUK58PISuz96WvKr
+                        HkFC5bkCgYEAtVqR8UxRnFNVdrjBurAbCTxqDK2L/o7Vdn8zWsz94He2mrFhmF+0
+                        E75U89/CTJwQ4EnZTWZ7uFJyydIUaNcVoYA1pE5BALryYc1CltOWfLRb4O4vFsw8
+                        A/0Y9ui6bS7HZHKHnRXSgQimLc+zyxBYc76yu5cAPm3NH3JEBRuQTjsCgYEA8IUo
+                        BsG7lPadGtcm3d36SvyZq+j/fbfL8kYUY6Ix76ZCDVI6C2dvJRqgjFcHPqcelFgu
+                        bj5UVdgbCnWE6fSkzFWVhfTrGBOqIq3fVobs8i9t8aRHBbUORlhCg6ekBaXPRo0r
+                        QW4Pz/o9gpvmVIgQU72oioCNmnbGJGmn6SlKGqMCgYBRoSnN3hdh8RSn8rOoz3nr
+                        51ioyjkYZLxqsQixl1GzBs+Xw731MybAOEzO1OoFR75E5pi8QSPxLJNkin4LTrz6
+                        y9XZVivmIz/Ui+qsLyMukJRGo49oiJd/CB6DjO/VE1hGu1KVf2wYDoeWWUZJYdse
+                        hji3PVmrwAqzW+CIGAcVXwKBgQDusUbSxcqx/7hUHbcNsjCl4F9lMtry2cdFjXTI
+                        l/t0uIuOis7d6G1t5in0fJ3M+K8pSwXxFFw/wTK8w3n/cHFn83trMG9rOoC639Do
+                        HwjhJF64025EZLVg7FA+Nc1aaX31pz2JNn/sx4vppWwE8e86G9s6cG+XHk5vbodb
+                        pkVLfwKBgQCgjcs5DepUkiCNaxtjcdZGrqjjzDfDVzxRkktwv/nbdI3djgJkfwOn
+                        Lt2Hu9/ha+qmWwuiHW6DcZhSYC4ilXiNyHfogDeYnHY+bKG3pcoAS4hJorgDOOQA
+                        O448xQHeKM+wCojHxmbKqWJpBkN2z9NOIVq8vQ4JVwfNK6P35PBzkw==
+                        -----END RSA PRIVATE KEY-----`; 
+                        const encryptedMessage = response.response;
+                        if (encryptedMessage) {
+                            var privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+                            var decrypted = privateKey.decrypt(forge.util.decode64(encryptedMessage), "RSA-OAEP", {
+                                md: forge.md.sha256.create(),
+                                mgf1: forge.mgf1.create(),
+                            });
+                            console.log('Decrypt',decrypted);
+                            // Display the decrypted message
+                            $("#encrypted-message").text(decrypted).show();
+                        }
                     },
                     error: function (response) {
                         location.reload(false);
                     },
                 });
             });
+            
         });
     </script>
 </body>
